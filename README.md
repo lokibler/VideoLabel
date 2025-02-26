@@ -13,27 +13,63 @@ A Python tool that automatically processes video files, generates descriptions, 
 
 ## Prerequisites
 
-- Python 3.7+
+- macOS 10.15+ (Catalina or newer)
+- Miniforge or Miniconda for M1/M2 Macs (or Anaconda for Intel Macs)
 - FFmpeg installed on your system
 - Sufficient disk space for processed videos (~10GB for models)
-- GPU recommended but not required
 - Internet connection for initial setup
 
 ## Installation
 
-1. Clone the repository:
+1. Install Miniforge/Miniconda (recommended for Mac):
 ```bash
-git clone https://github.com/yourusername/video_organizer.git
-cd video_organizer
+# For Apple Silicon (M1/M2) Macs:
+curl -L https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh -o miniforge.sh
+
+# For Intel Macs:
+curl -L https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o miniforge.sh
+
+# Install Miniforge
+bash miniforge.sh
 ```
 
-2. Install dependencies:
+2. Set up Conda environment:
 ```bash
+# Create new conda environment
+conda create -n video_organizer python=3.11
+
+# Activate environment
+conda activate video_organizer
+
+# Verify Python installation
+python --version
+```
+
+3. Clone and install dependencies:
+```bash
+# Clone repository
+git clone https://github.com/yourusername/video_organizer.git
+cd video_organizer
+
+# Install dependencies using conda and pip
+conda install pytorch torchvision -c pytorch
 pip install -r requirements.txt
 ```
 
-3. Set up Hugging Face access:
+4. Install FFmpeg using Homebrew:
 ```bash
+# Install Homebrew if not already installed
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install FFmpeg
+brew install ffmpeg
+```
+
+5. Set up Hugging Face access:
+```bash
+# Make sure your virtual environment is activated
+source venv/bin/activate
+
 # Install the Hugging Face CLI
 pip install --upgrade huggingface_hub
 
@@ -41,7 +77,10 @@ pip install --upgrade huggingface_hub
 huggingface-cli login
 ```
 
-4. Download required models (this will take some time and ~10GB of disk space):
+6. Download required models (this will take some time and ~10GB of disk space):
+```bash
+# Create and run the setup script
+cat > setup_models.py << 'EOL'
 ```python
 # Run this Python script once to download models
 from transformers import CLIPProcessor, CLIPModel, pipeline
@@ -56,22 +95,17 @@ pipeline("image-to-text", model="Salesforce/blip-image-captioning-base")
 
 # Download Sentence Transformer
 SentenceTransformer('all-MiniLM-L6-v2')
+EOL
+
+# Run the setup script
+python setup_models.py
 ```
 
-5. Install FFmpeg:
+7. Create directories and run:
 ```bash
-# On Ubuntu/Debian
-sudo apt-get update && sudo apt-get install ffmpeg
+# Make sure virtual environment is activated
+source venv/bin/activate
 
-# On macOS with Homebrew
-brew install ffmpeg
-
-# On Windows
-# Download from https://ffmpeg.org/download.html and add to PATH
-```
-
-6. Create directories and run:
-```bash
 # Create required directories
 mkdir input_videos processed_videos
 
@@ -79,6 +113,23 @@ mkdir input_videos processed_videos
 
 # Run the script
 python video_organizer.py
+```
+
+## Environment Management
+
+- To activate the environment:
+```bash
+conda activate video_organizer
+```
+
+- To deactivate when done:
+```bash
+conda deactivate
+```
+
+- To remove the environment (if needed):
+```bash
+conda remove --name video_organizer --all
 ```
 
 ## Usage
@@ -92,9 +143,11 @@ The script will process all video files in the `input_videos` directory and save
 - .mkv
 
 ### Processing Steps
+0. Activate virtual environment: `source venv/bin/activate`
 1. Place your videos in the `input_videos` directory
 2. Run `python video_organizer.py`
 3. Find processed videos in `processed_videos` directory, organized by content similarity
+4. When done, deactivate virtual environment: `deactivate`
 
 ## Output
 
@@ -120,6 +173,7 @@ ffprobe -show_entries format_tags=description input.mp4
 - All processing is done locally on your machine
 - First run will download several GB of models
 - Processing speed depends on your CPU/GPU
+- All dependencies are isolated in the virtual environment
 
 ## Configuration
 
@@ -139,17 +193,26 @@ You can modify these parameters in the script:
 
 ## Troubleshooting
 
-Common issues and solutions:
+Mac-specific issues and solutions:
 
-1. **FFmpeg not found**: Ensure FFmpeg is installed and in your system PATH
-2. **CUDA errors**: If using GPU, ensure PyTorch CUDA version matches your NVIDIA drivers
-3. **Memory errors**: Reduce `num_frames` if processing high-resolution videos
-4. **Model download errors**: 
-   - Check your internet connection
-   - Ensure you're logged in to Hugging Face (`huggingface-cli login`)
-   - Try downloading models individually using the provided Python script
-5. **Disk space errors**: Ensure you have ~10GB free for models
-6. **CUDA out of memory**: Reduce batch size or use CPU by setting `device="cpu"`
+1. **Apple Silicon (M1/M2) compatibility**:
+   - Use Miniforge instead of Anaconda for native ARM support
+   - Ensure PyTorch is installed with proper architecture support
+   - If using Rosetta 2, prefix commands with `arch -x86_64`
+
+2. **Environment activation issues**:
+   - Ensure Conda is initialized: `conda init zsh` (or `conda init bash`)
+   - Restart terminal after initialization
+   - Check active environment: `conda info --envs`
+
+3. **FFmpeg installation**:
+   - If Homebrew install fails, try: `brew update && brew upgrade`
+   - Alternative install: `conda install ffmpeg -c conda-forge`
+
+4. **Memory/Performance issues**:
+   - For M1/M2 Macs, ensure using native ARM versions of packages
+   - Monitor Activity Monitor for memory usage
+   - Reduce batch size if needed
 
 ## License
 

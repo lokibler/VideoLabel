@@ -20,44 +20,55 @@ A Python tool that automatically processes video files, generates descriptions, 
 ## Installation
 
 1. Clone the repository:
-bash
+```bash
 git clone https://github.com/yourusername/video_organizer.git
 cd video_organizer
+```
 
 2. Install dependencies:
-bash
+```bash
 pip install -r requirements.txt
+```
 
 3. Set your OpenAI API key:
-bash
+```bash
 export OPENAI_API_KEY='your_openai_api_key'
+```
 
 4. Run the script:
-bash
+```bash
 python video_organizer.py
+```
 
 ## Usage
 
-The script will process all video files in the `input` directory and save the generated descriptions and clusters in the `output` directory.
+The script will process all video files in the `input_videos` directory and save the generated descriptions and clusters in the `processed_videos` directory.
+
+1. Create input and output directories:
+```bash
+mkdir input_videos processed_videos
+```
+
+2. Place your video files in the `input_videos` directory
+
+3. Download the ImageNet class labels:
+```bash
+wget https://raw.githubusercontent.com/pytorch/vision/master/torchvision/data/labels/imagenet_classes.txt
+```
 
 ## Output
 
-The script will create a folder for each cluster in the `output` directory. Each cluster folder will contain the following:
+The script will create a folder for each cluster in the `processed_videos` directory. Each cluster folder will contain:
 
-- `cluster_<cluster_number>`: A folder for each cluster
-- `cluster_<cluster_number>/videos`: A folder for each video in the cluster 
-- `cluster_<cluster_number>/description.txt`: A text file containing the description of the cluster
-- `cluster_<cluster_number>/videos.txt`: A text file containing the list of video files in the cluster
+- Videos with similar content grouped together
+- Each video will have its description embedded in its metadata
 
 ## Notes
 
-- The script uses the OpenAI API for frame analysis and description generation.
-- The script uses the ResNet50 model for frame analysis.
-- The script uses the GPT-3.5 model for description generation.
-- The script uses the KMeans clustering algorithm to cluster the videos.
-- The script uses the PIL library for image processing.
-- The script uses the torch library for deep learning.
-- The script uses the numpy library for numerical operations.
+- Uses ResNet50 for frame analysis and object detection
+- Uses GPT-3.5 for generating natural language descriptions
+- Uses KMeans clustering to group similar videos
+- Embeds descriptions directly into video metadata using FFmpeg
 
 ## Configuration
 

@@ -1,21 +1,22 @@
 # Video Organizer
 
-A Python tool that automatically processes video files, generates descriptions, and organizes them into content-based clusters. It uses ResNet for frame analysis and GPT-3.5 for generating natural language descriptions, which are then embedded into the video metadata.
+A Python tool that automatically processes video files, generates descriptions, and organizes them into content-based clusters. It uses CLIP for frame analysis and BLIP for generating natural language descriptions, which are then embedded into the video metadata. All processing is done locally without requiring any API calls.
 
 ## Features
 
-- Automatically analyzes video content using ResNet50
-- Generates two-sentence descriptions using GPT-3.5
+- Automatically analyzes video content using CLIP
+- Generates natural language descriptions using BLIP
 - Embeds descriptions into video metadata
 - Clusters similar videos into folders
 - Supports multiple video formats (.mp4, .mov, .avi, .mkv)
+- Works completely offline after initial model download
 
 ## Prerequisites
 
 - Python 3.7+
 - FFmpeg installed on your system
-- OpenAI API key
 - Sufficient disk space for processed videos
+- GPU recommended but not required
 
 ## Installation
 
@@ -30,12 +31,7 @@ cd video_organizer
 pip install -r requirements.txt
 ```
 
-3. Set your OpenAI API key:
-```bash
-export OPENAI_API_KEY='your_openai_api_key'
-```
-
-4. Run the script:
+3. Run the script:
 ```bash
 python video_organizer.py
 ```
@@ -65,10 +61,11 @@ The script will create a folder for each cluster in the `processed_videos` direc
 
 ## Notes
 
-- Uses ResNet50 for frame analysis and object detection
-- Uses GPT-3.5 for generating natural language descriptions
+- Uses CLIP for frame analysis and object detection
+- Uses BLIP for generating natural language descriptions
 - Uses KMeans clustering to group similar videos
 - Embeds descriptions directly into video metadata using FFmpeg
+- All processing is done locally on your machine
 
 ## Configuration
 

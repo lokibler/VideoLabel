@@ -15,8 +15,9 @@ A Python tool that automatically processes video files, generates descriptions, 
 
 - Python 3.7+
 - FFmpeg installed on your system
-- Sufficient disk space for processed videos
+- Sufficient disk space for processed videos (~10GB for models)
 - GPU recommended but not required
+- Internet connection for initial setup
 
 ## Installation
 
@@ -31,8 +32,52 @@ cd video_organizer
 pip install -r requirements.txt
 ```
 
-3. Run the script:
+3. Set up Hugging Face access:
 ```bash
+# Install the Hugging Face CLI
+pip install --upgrade huggingface_hub
+
+# Log in to Hugging Face (you'll need to create a free account at huggingface.co)
+huggingface-cli login
+```
+
+4. Download required models (this will take some time and ~10GB of disk space):
+```python
+# Run this Python script once to download models
+from transformers import CLIPProcessor, CLIPModel, pipeline
+from sentence_transformers import SentenceTransformer
+
+# Download CLIP
+CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+# Download BLIP
+pipeline("image-to-text", model="Salesforce/blip-image-captioning-base")
+
+# Download Sentence Transformer
+SentenceTransformer('all-MiniLM-L6-v2')
+```
+
+5. Install FFmpeg:
+```bash
+# On Ubuntu/Debian
+sudo apt-get update && sudo apt-get install ffmpeg
+
+# On macOS with Homebrew
+brew install ffmpeg
+
+# On Windows
+# Download from https://ffmpeg.org/download.html and add to PATH
+```
+
+6. Create directories and run:
+```bash
+# Create required directories
+mkdir input_videos processed_videos
+
+# Place your videos in input_videos directory
+
+# Run the script
 python video_organizer.py
 ```
 
@@ -40,17 +85,16 @@ python video_organizer.py
 
 The script will process all video files in the `input_videos` directory and save the generated descriptions and clusters in the `processed_videos` directory.
 
-1. Create input and output directories:
-```bash
-mkdir input_videos processed_videos
-```
+### Supported Video Formats
+- .mp4
+- .mov
+- .avi
+- .mkv
 
-2. Place your video files in the `input_videos` directory
-
-3. Download the ImageNet class labels:
-```bash
-wget https://raw.githubusercontent.com/pytorch/vision/master/torchvision/data/labels/imagenet_classes.txt
-```
+### Processing Steps
+1. Place your videos in the `input_videos` directory
+2. Run `python video_organizer.py`
+3. Find processed videos in `processed_videos` directory, organized by content similarity
 
 ## Output
 
@@ -59,6 +103,14 @@ The script will create a folder for each cluster in the `processed_videos` direc
 - Videos with similar content grouped together
 - Each video will have its description embedded in its metadata
 
+You can view the embedded descriptions using:
+```bash
+# On Linux/macOS
+ffprobe -show_entries format_tags=description input.mp4
+
+# Or using MediaInfo GUI on any platform
+```
+
 ## Notes
 
 - Uses CLIP for frame analysis and object detection
@@ -66,6 +118,8 @@ The script will create a folder for each cluster in the `processed_videos` direc
 - Uses KMeans clustering to group similar videos
 - Embeds descriptions directly into video metadata using FFmpeg
 - All processing is done locally on your machine
+- First run will download several GB of models
+- Processing speed depends on your CPU/GPU
 
 ## Configuration
 
@@ -74,20 +128,14 @@ You can modify these parameters in the script:
 - Number of clusters (`num_clusters` in `cluster_videos`)
 - Supported video formats (`supported_formats` in `VideoProcessor`)
 
-## Cost Considerations
-
-This script uses OpenAI's API for:
-- GPT-3.5 text generation
-- Text embeddings for clustering
-
-Please be aware of the associated API costs when processing large numbers of videos.
-
 ## Limitations
 
 - Processing time depends on video length and quantity
 - Quality of descriptions depends on the clarity of video frames
 - Clustering effectiveness improves with larger video collections
 - Requires sufficient memory for processing high-resolution videos
+- Initial setup requires internet connection
+- Large disk space needed for models (~10GB)
 
 ## Troubleshooting
 
@@ -96,7 +144,12 @@ Common issues and solutions:
 1. **FFmpeg not found**: Ensure FFmpeg is installed and in your system PATH
 2. **CUDA errors**: If using GPU, ensure PyTorch CUDA version matches your NVIDIA drivers
 3. **Memory errors**: Reduce `num_frames` if processing high-resolution videos
-4. **API errors**: Verify your OpenAI API key and quota
+4. **Model download errors**: 
+   - Check your internet connection
+   - Ensure you're logged in to Hugging Face (`huggingface-cli login`)
+   - Try downloading models individually using the provided Python script
+5. **Disk space errors**: Ensure you have ~10GB free for models
+6. **CUDA out of memory**: Reduce batch size or use CPU by setting `device="cpu"`
 
 ## License
 
